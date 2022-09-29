@@ -8,11 +8,11 @@ import { Page } from "azure-devops-ui/Page";
 
 import { CommonServiceIds, getClient, IProjectPageService } from "azure-devops-extension-api";
 import { GitRestClient } from "azure-devops-extension-api/Git";
-import { GitCommitRef, GitFullArray, GitQueryCommitsCriteria, GitRepository } from "azure-devops-extension-api/Git/Git";
+import { GitCommitRef, GitRepository } from "azure-devops-extension-api/Git/Git";
 import { ISimpleListCell } from "azure-devops-ui/List";
 import { ITableColumn, ITableRow, renderSimpleCell, renderSimpleCellValue, Table, TableRow } from "azure-devops-ui/Table";
 import { ArrayItemProvider } from "azure-devops-ui/Utilities/Provider";
-import { showRootComponent } from "../../Common";
+import { CustRestClient, GitFullArray, GitQueryCommitsCriteria, showRootComponent } from "../../Common";
 
 interface IRepositoryServiceHubContentState {
     gitRepos?: ArrayItemProvider<GitRepository>;
@@ -107,7 +107,7 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
             const repoName: string = repos[i].name;
             const projName: string = repos[i].project.name;
             const filter: GitQueryCommitsCriteria = { $top: 1 }
-            const commit: GitCommitRef[] = await getClient(GitRestClient).getCommits(repoName, filter, projName);
+            const commit: GitCommitRef[] = await getClient(CustRestClient).getCommits(repoName, filter, projName);
             lastCommits = lastCommits.concat(commit);
         }
         //Combine the array of repositoris with the array of commits

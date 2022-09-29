@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "test-list",
   "publisher": "Tester-Ferris",
-  "version": "1.0.73",
+  "version": "1.0.74",
   "name": "test-list",
   "description": "Lists git repositories in a more convenient way",
   "public": true,

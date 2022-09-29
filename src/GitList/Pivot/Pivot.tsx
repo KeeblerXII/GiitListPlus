@@ -3,11 +3,11 @@ import "./Pivot.scss";
 import * as SDK from "azure-devops-extension-sdk";
 import * as React from "react";
 
-import { showRootComponent } from "../../Common";
+import { CustRestClient, GitFullArray, GitQueryCommitsCriteria, showRootComponent } from "../../Common";
 
 import { CommonServiceIds, getClient, IHostNavigationService } from "azure-devops-extension-api";
 import { CoreRestClient, ProjectVisibility, TeamProjectReference } from "azure-devops-extension-api/Core";
-import { GitCommitRef, GitFullArray, GitQueryCommitsCriteria, GitRepository, GitRestClient } from "azure-devops-extension-api/Git";
+import { GitCommitRef, GitRepository, GitRestClient } from "azure-devops-extension-api/Git";
 
 import { Header, TitleSize } from "azure-devops-ui/Header";
 import { ISimpleListCell } from "azure-devops-ui/List";
@@ -124,7 +124,7 @@ class PivotContent extends React.Component<{}, IPivotContentState> {
             const repoName: string = repositories[i].name;
             const projName: string = repositories[i].project.name;
             const filter: GitQueryCommitsCriteria = { $top: 1 }
-            const commit: GitCommitRef[] = await getClient(GitRestClient).getCommits(repoName, filter, projName);
+            const commit: GitCommitRef[] = await getClient(CustRestClient).getCommits(repoName, filter, projName);
             lastCommits = lastCommits.concat(commit);
         }
         //Combine the array of repositoris with the array of commits
