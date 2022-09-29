@@ -7,7 +7,7 @@
                 "ms.vss-tfs-web.suite-home-pivots"
             ],
             "properties": {
-                "name": "My repositories",
+                "name": "Their repositories",
                 "uri": "dist/Pivot/Pivot.html",
                 "order": 500000
             }

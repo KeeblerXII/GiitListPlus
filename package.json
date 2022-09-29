@@ -1,7 +1,7 @@
 {
-  "name": "git-repository-list",
+  "name": "test-list",
   "version": "1.0.0",
-  "description": "Git repository list",
+  "description": "Git repository list test",
   "keywords": [
     "extensions",
     "Azure DevOps",
