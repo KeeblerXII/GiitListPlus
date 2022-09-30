@@ -8,11 +8,12 @@ import { Page } from "azure-devops-ui/Page";
 
 import { CommonServiceIds, getClient, IProjectPageService } from "azure-devops-extension-api";
 import { GitRestClient } from "azure-devops-extension-api/Git";
-import { GitCommitRef, GitRepository } from "azure-devops-extension-api/Git/Git";
+import { GitCommitRef, GitQueryCommitsCriteria, GitRepository } from "azure-devops-extension-api/Git/Git";
 import { ISimpleListCell } from "azure-devops-ui/List";
 import { ITableColumn, ITableRow, renderSimpleCell, renderSimpleCellValue, Table, TableRow } from "azure-devops-ui/Table";
 import { ArrayItemProvider } from "azure-devops-ui/Utilities/Provider";
-import { CustRestClient, GitFullArray, GitQueryCommitsCriteria, showRootComponent } from "../../Common";
+import { GitFullArray, showRootComponent } from "../../Common";
+
 
 interface IRepositoryServiceHubContentState {
     gitRepos?: ArrayItemProvider<GitRepository>;
@@ -31,6 +32,7 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                 {
                     id: 'name',
                     name: 'Repository',
+                    sortProps: {},
                     renderCell: (rowIndex: number, columnIndex: number, tableColumn: ITableColumn<GitRepository>, tableItem: GitRepository): JSX.Element => {
                       const content: ISimpleListCell = { href: tableItem.webUrl, text: tableItem.name };
                       return renderSimpleCellValue<any>(columnIndex, tableColumn, content);
@@ -58,6 +60,7 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
                 {
                     id: "dates",
                     name: "Last Commit Date",
+                    sortProps: {},
                     renderCell: (rowIndex: number, columnIndex: number, tableColumn: ITableColumn<GitRepository>, tableItem: GitCommitRef): JSX.Element => {
                         var date = tableItem.author.date
                         return renderSimpleCellValue<any>(columnIndex, tableColumn, date.toString().slice(0, 15));
@@ -87,7 +90,7 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
             nbrRepos: 0
         };
     }
-
+    
     public async componentWillMount() {
         SDK.init();
 
@@ -99,23 +102,45 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
             repos = await getClient(GitRestClient).getRepositories(project.name);
         }
 
-        //Sort the list in alphabetical on repository name
+        //Sort the repositories by size to have the empty repos eliminated
         repos = repos.sort((a, b) => {
-            return a.name.localeCompare(b.name)
+            return b.size - a.size
         });
         for (let i = 0; i < repos.length; i++){
             const repoName: string = repos[i].name;
             const projName: string = repos[i].project.name;
-            const filter: GitQueryCommitsCriteria = { $top: 1 }
-            const commit: GitCommitRef[] = await getClient(CustRestClient).getCommits(repoName, filter, projName);
+            const filter: GitQueryCommitsCriteria = {
+                $skip: 0, $top: 1,
+                author: "",
+                compareVersion: undefined as any,
+                excludeDeletes: false,
+                fromCommitId: "",
+                fromDate: "",
+                historyMode: undefined as any,
+                ids: [],
+                includeLinks: false,
+                includePushData: false,
+                includeUserImageUrl: false,
+                includeWorkItems: false,
+                itemPath: "",
+                itemVersion: undefined as any,
+                toCommitId: "",
+                toDate: "",
+                user: ""
+              };
+            const commit: GitCommitRef[] = await getClient(GitRestClient).getCommits(repoName, filter, projName);
             lastCommits = lastCommits.concat(commit);
         }
         //Combine the array of repositoris with the array of commits
-        const combArray = repos.map((r, idx) => ({
+        var combArray = lastCommits.map((r, idx) => ({
             ...r,
-            ...(lastCommits[idx] || {}),
+            ...(repos[idx] || {}),
         }));
-
+        //Sort the list in alphabetical on repository name
+        combArray = combArray.sort((a, b) => {
+            return a.name.localeCompare(b.name)
+        });
+            
         this.setState({
             gitRepos: new ArrayItemProvider(repos),
             gitCommits: new ArrayItemProvider(lastCommits),
@@ -123,6 +148,7 @@ class RepositoryServiceHubContent extends React.Component<{}, IRepositoryService
             nbrRepos: repos.length
         });
     }
+    
 
     public render(): JSX.Element {
         return (
